@@ -9,16 +9,25 @@ import { AppComponent } from './app.component';
 
 import { HttpClientModule } from '@angular/common/http';
 
+//Pluggins
+import { Browser } from '@capacitor/browser';
+import { IonicStorageModule } from '@ionic/storage-angular';
+
+
 @NgModule({
   declarations: [AppComponent],
   imports: [
     BrowserModule, 
     IonicModule.forRoot(), 
     AppRoutingModule,
-    HttpClientModule
+    HttpClientModule,
+    IonicStorageModule.forRoot()
 
   ],
-  providers: [{ provide: RouteReuseStrategy, useClass: IonicRouteStrategy }],
+  providers: [{ provide: RouteReuseStrategy, useClass: IonicRouteStrategy },
+    BrowserModule,
+  ],
+
   bootstrap: [AppComponent],
 })
 export class AppModule {}

@@ -2,7 +2,7 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { environment } from 'src/environments/environment';
 import { Article, ArticlesByCategoryAndPage, NewsResponse } from '../interfaces';
-import { Observable,map } from 'rxjs';
+import { Observable, map, of } from 'rxjs';
 
 
 const apiKey = environment.apiKey
@@ -13,8 +13,7 @@ const apiUrl = environment.apiUrl;
 })
 export class NewsService {
 
-  private articlesByCategoryAndPage: ArticlesByCategoryAndPage ={}
-
+  private articlesByCategoryAndPage: ArticlesByCategoryAndPage ={};
 
   constructor(private http: HttpClient) { }
 
@@ -30,25 +29,31 @@ export class NewsService {
 
   getTopHeadLines():Observable<Article[]>{
 
-    return this.http.get<NewsResponse>(`https://newsapi.org/v2/top-headlines?country=us&category=business`,{
-      params: {
-        apiKey:apiKey
+
+    return this.http.get<NewsResponse>(`${apiUrl}/top-headlines?country=us&category=business`,{
+      params: { 
+        apiKey: apiKey,
       }
-    }).pipe(
+    })
+    .pipe(
       map( ({articles}) => articles)
     );    
   }
 
 
-  getTopHeadLinesByCategory( category: string):Observable<Article[]> {
+  getTopHeadLinesByCategory( category: string, loadMore: boolean = false):Observable<Article[]> {
 
-    return this.http.get<NewsResponse>(`https://newsapi.org/v2/top-headlines?country=us&category=${category}`,{
-      params: {
-        apiKey:apiKey
-      }
-    }).pipe(
-      map( ({articles}) => articles)
-    ); 
+    if ( loadMore ) {
+      return this.getArticlesByCategory ( category );
+
+    }
+
+    if ( this.articlesByCategoryAndPage[category] ){
+      //of combierte en observable cualquier cosa que le pasemos
+      return of(this.articlesByCategoryAndPage[category].articles);
+    }
+
+    return this.getArticlesByCategory( category );
   }
 
   private getArticlesByCategory( category: string):Observable<Article[]> {
@@ -65,7 +70,7 @@ export class NewsService {
     }
 
     const page = this.articlesByCategoryAndPage[category].page += 1;
-    
+    // 12:23
     return this.executeQuery<NewsResponse>(`/top-headlines?category=${ category }&page=${ page }`)
     .pipe(
       map( ({ articles }) => {
